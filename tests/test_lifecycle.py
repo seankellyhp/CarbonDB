@@ -9,7 +9,7 @@ import pytest
 
 
 def carbon(*args, **kw):
-    return subprocess.run([sys.executable, "-m", "carbon_skill", *args],
+    return subprocess.run([sys.executable, "-m", "carbondb", *args],
                           capture_output=True, text=True, timeout=90, **kw)
 
 
@@ -42,7 +42,7 @@ def test_start_report_end(tmp_path):
 
     root = tmp_path / "runs"
     assert not list(root.rglob("emissions.csv")) and not list(root.rglob("*.json"))
-    from carbon_skill import db
+    from carbondb import db
     run = db.get_run(1)
     assert run["state"] == "stopped" and run["stopped_by"] == "carbon end"
     assert run["usage_saved_at"] and run["cpu_model"]

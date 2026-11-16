@@ -31,8 +31,8 @@ so one calculation over 185k output tokens is a different number from the sum
 of 183 calculations - and the wrong one. Per-request results are kept and can
 be dumped with `--json`.
 
-    python -m carbon_skill.provider_impacts --json <label|@id>   per-request results
-    python -m carbon_skill.provider_impacts <label|@id>          the report section
+    python -m carbondb.provider_impacts --json <label|@id>   per-request results
+    python -m carbondb.provider_impacts <label|@id>          the report section
 
 Nothing here is a measurement of any provider's infrastructure, and nothing
 here may be added to the CodeCarbon figures: different scopes, different
@@ -431,7 +431,7 @@ def render(calls, ests: list[Estimate] | None = None) -> list[str]:
         return [
             "  Provider inference (EcoLogits estimate)",
             "    Not computed: the ecologits package is not installed in this skill's venv.",
-            "      Reinstall the program: uv tool install --reinstall ./carbon_skill",
+            "      Reinstall the program: uv tool upgrade --reinstall carbondb",
             "",
         ]
 
@@ -526,7 +526,7 @@ def main() -> int:
     as_json = "--json" in argv
     argv = [a for a in argv if a != "--json"]
     if not argv:
-        print("usage: python -m carbon_skill.provider_impacts [--json] <label|@id>", file=sys.stderr)
+        print("usage: python -m carbondb.provider_impacts [--json] <label|@id>", file=sys.stderr)
         return 2
     try:
         run = runs.find(argv[0])

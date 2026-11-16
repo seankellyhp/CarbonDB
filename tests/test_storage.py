@@ -7,7 +7,7 @@ import threading
 import psutil
 import pytest
 
-from carbon_skill import db, end, export, legacy, monitor, paths, runs, usage
+from carbondb import db, end, export, legacy, monitor, paths, runs, usage
 
 from legacy_fixture import HEADER, write_run, write_transcript
 
@@ -135,7 +135,7 @@ def test_usage_round_trip_and_idempotent(tmp_path):
         assert conn.execute("SELECT count(*) FROM api_call").fetchone()[0] == 8
         assert conn.execute("SELECT count(*) FROM provider_estimate").fetchone()[0] == 8
         assert conn.execute("SELECT count(*) FROM provider_estimate WHERE model_used IS NULL").fetchone()[0] == 1
-    from carbon_skill import provider_impacts, tokens
+    from carbondb import provider_impacts, tokens
 
     run = db.get_run(run_id)
     calls, ests = usage.load(run)
@@ -237,7 +237,7 @@ def test_outside_any_session_uses_newest(monkeypatch, capsys):
 
 def _real_here(monkeypatch, agent, sess, known_agent):
     """The real runs.here(), with only what it reads from the machine replaced."""
-    from carbon_skill import procs, tokens
+    from carbondb import procs, tokens
 
     monkeypatch.setattr(procs, "detect_agent", lambda: agent)
     monkeypatch.setattr(procs, "under_known_agent", lambda: known_agent)
@@ -407,7 +407,7 @@ def test_dump_without_version_is_adopted(tmp_path, monkeypatch):
 
 
 def test_cli_export_and_list(tmp_path, capsys):
-    from carbon_skill import cli
+    from carbondb import cli
 
     run_id = make_run("cli", samples=2)
     out = tmp_path / "e.csv"

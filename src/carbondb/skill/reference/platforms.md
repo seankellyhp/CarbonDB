@@ -41,9 +41,9 @@ Runs bound to a live agent are never touched. A report prints
 ## Data model
 
 Everything is in one SQLite database, `carbon.db`, in the data folder:
-`CARBON_RUN_ROOT`, else `~/.local/share/carbon-skill/runs` on Linux,
-`~/Library/Application Support/carbon-skill/runs` on macOS,
-`%LOCALAPPDATA%\carbon-skill\carbon-skill\runs` on Windows. Uninstalling the
+`CARBON_RUN_ROOT`, else `~/.local/share/carbondb/runs` on Linux,
+`~/Library/Application Support/carbondb/runs` on macOS,
+`%LOCALAPPDATA%\carbondb\carbondb\runs` on Windows. Uninstalling the
 skill does not delete it. Do not point `CARBON_RUN_ROOT` at a synced or network
 folder (OneDrive, Dropbox, NFS): SQLite's write-ahead log is not safe there.
 

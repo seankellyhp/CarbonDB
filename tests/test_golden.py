@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from carbon_skill import db, paths, report, runs
+from carbondb import db, paths, report, runs
 
 from legacy_fixture import write_run, write_transcript
 

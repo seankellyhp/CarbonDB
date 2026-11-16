@@ -14,7 +14,8 @@ from pathlib import Path
 
 from . import paths
 
-MARKER = ".installed-by-carbon-skill"
+MARKER = ".installed-by-carbondb"
+OLD_MARKER = ".installed-by-carbon-skill"  # the program's name before 0.4
 PLACEHOLDER = "{{CARBON_CMD}}"
 OLD_LAYOUT = ("scripts", ".venv", "pyproject.toml", "uv.lock", ".python-version")
 
@@ -49,7 +50,11 @@ def _project_dir() -> Path | None:
         text = (proj / "pyproject.toml").read_text()
     except OSError:
         return None
-    return proj if 'name = "carbon-skill"' in text else None
+    return proj if 'name = "carbondb"' in text else None
+
+
+def installed_by_us(folder: Path) -> bool:
+    return (folder / MARKER).exists() or (folder / OLD_MARKER).exists()
 
 
 def _quote(path: str) -> str:
@@ -74,7 +79,7 @@ def carbon_cmd() -> str:
 
 
 def _template() -> resources.abc.Traversable:
-    return resources.files("carbon_skill") / "skill"
+    return resources.files("carbondb") / "skill"
 
 
 def _copy_tree(src, dest: Path, cmd: str) -> None:
@@ -118,16 +123,17 @@ def _migrate_old(folder: Path) -> list[str]:
 def install(name: str, force: bool = False) -> list[str]:
     config, folder = AGENTS[name]()
     out = []
-    if folder.exists() and not (folder / MARKER).exists():
+    if folder.exists() and not installed_by_us(folder):
         if not force:
             raise paths.Failure(
-                f"{folder} exists and was not installed by carbon-skill; left it alone.\n"
+                f"{folder} exists and was not installed by carbondb; left it alone.\n"
                 "Pass --force to move it to a backup and install anyway."
             )
-        backup = folder.parent.parent / f"carbon-skill-backup-{datetime.now():%Y%m%d-%H%M%S}"
+        backup = folder.parent.parent / f"carbondb-backup-{datetime.now():%Y%m%d-%H%M%S}"
         shutil.move(str(folder), str(backup))
         out.append(f"  moved the existing folder to {backup}")
-    if (folder / MARKER).exists():
+    if installed_by_us(folder):
+        (folder / OLD_MARKER).unlink(missing_ok=True)
         out += _migrate_old(folder)
         for child in ("SKILL.md", "reference"):
             p = folder / child
@@ -137,7 +143,7 @@ def install(name: str, force: bool = False) -> list[str]:
                 p.unlink()
     cmd = carbon_cmd()
     _copy_tree(_template(), folder, cmd)
-    (folder / MARKER).write_text(f"carbon-skill\ncommand: {cmd}\n")
+    (folder / MARKER).write_text(f"carbondb\ncommand: {cmd}\n")
     return [f"Installed the carbon skill for {name} at {folder}", f"  command: {cmd}"] + out
 
 
@@ -145,13 +151,13 @@ def remove(name: str) -> str:
     _, folder = AGENTS[name]()
     if not folder.exists():
         return f"Nothing installed for {name} at {folder}"
-    if not (folder / MARKER).exists():
-        return f"{folder} was not installed by carbon-skill; left it alone."
+    if not installed_by_us(folder):
+        return f"{folder} was not installed by carbondb; left it alone."
     old_runs = folder / "runs"
     if old_runs.is_dir() and any(p.is_dir() for p in old_runs.iterdir()):
         # Runs the upgrade could not move (their label was taken or is not valid).
         for child in folder.iterdir():
-            if child.name in ("runs", MARKER):
+            if child.name in ("runs", MARKER, OLD_MARKER):
                 continue
             if child.is_dir() and not child.is_symlink():
                 shutil.rmtree(child)

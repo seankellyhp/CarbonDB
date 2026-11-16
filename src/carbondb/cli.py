@@ -23,7 +23,7 @@ def _parser() -> argparse.ArgumentParser:
         prog="carbon",
         description="Track the energy, emissions and token usage of AI-assisted coding.",
     )
-    p.add_argument("--version", action="version", version=f"carbon-skill {__version__}")
+    p.add_argument("--version", action="version", version=f"carbondb {__version__}")
     sub = p.add_subparsers(dest="command", metavar="command")
 
     run_help = "a label (its newest run) or @<id>; default: this session's run"

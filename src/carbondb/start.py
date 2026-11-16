@@ -112,7 +112,7 @@ def launch(label: str, quiet: bool = False) -> dict:
     try:
         rundir.mkdir(parents=True, exist_ok=True)
         proc = procs.spawn_detached(
-            [sys.executable, "-m", "carbon_skill", "_monitor", str(run_id)], log, rundir
+            [sys.executable, "-m", "carbondb", "_monitor", str(run_id)], log, rundir
         )
         # Recorded at once, so a sweep from another command never takes the
         # run for one whose monitor died.

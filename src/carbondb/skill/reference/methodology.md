@@ -35,7 +35,7 @@ bear on the question; never quote the mean alone as if it were a reading.
    non-linear in output length and Claude Code sessions are wildly
    heterogeneous - 183 separate calculations summed is a different, and
    correct, number compared to one calculation over 185k tokens. Per-request
-   results are retained; `python -m carbon_skill.provider_impacts --json <label|@id>` (with the program's Python)
+   results are retained; `python -m carbondb.provider_impacts --json <label|@id>` (with the program's Python)
    dumps every one of them with the model, resolution, tokens and latency used.
 3. **The ranges are real uncertainty, not rounding.** When a provider does not
    publish its architecture - the usual case, and Anthropic's - EcoLogits

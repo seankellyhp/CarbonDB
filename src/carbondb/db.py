@@ -204,7 +204,7 @@ def connect() -> sqlite3.Connection:
     if sqlite3.sqlite_version_info < MIN_SQLITE:
         raise paths.Failure(
             f"SQLite {sqlite3.sqlite_version} is too old; carbon needs 3.37 or newer. "
-            "Reinstall with a uv-managed Python: uv tool install --reinstall --python 3.12 ./carbon_skill"
+            "Reinstall with a uv-managed Python: uv tool upgrade --python 3.12 carbondb"
         )
     conn = sqlite3.connect(path(), timeout=5.0, isolation_level=None)
     conn.row_factory = sqlite3.Row
@@ -232,7 +232,7 @@ def _migrate(conn: sqlite3.Connection) -> bool:
     if version > VERSION:
         raise paths.Failure(
             f"{path()} was written by a newer carbon (schema {version}; this program knows {VERSION}). "
-            "Update the program: uv tool install --reinstall ./carbon_skill"
+            "Update the program: uv tool upgrade carbondb"
         )
     with transaction(conn):
         # Re-read under the write lock: another process may have just created it.

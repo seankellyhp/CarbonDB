@@ -25,7 +25,7 @@ def command(measure: bool = True) -> int:
         problems += 1
         print(f"PROBLEM  {what}")
 
-    ok(f"carbon-skill {__version__} at {os.path.dirname(os.path.abspath(__file__))}")
+    ok(f"carbondb {__version__} at {os.path.dirname(os.path.abspath(__file__))}")
     v = sys.version_info
     (ok if v >= (3, 12) else bad)(f"Python {v.major}.{v.minor}.{v.micro} ({sys.executable})")
 
@@ -36,7 +36,7 @@ def command(measure: bool = True) -> int:
             __import__(mod)
             ok(f"{mod} {version(mod)}")
         except Exception as exc:
-            bad(f"{mod} does not import ({exc}): uv tool install --reinstall ./carbon_skill")
+            bad(f"{mod} does not import ({exc}): uv tool upgrade --reinstall carbondb")
 
     try:
         root = paths.data_root()
@@ -73,7 +73,7 @@ def command(measure: bool = True) -> int:
         config, folder = loc()
         if name not in found:
             print(f"-        {name}: not detected ({config} does not exist)")
-        elif (folder / "SKILL.md").exists() and (folder / agents.MARKER).exists():
+        elif (folder / "SKILL.md").exists() and agents.installed_by_us(folder):
             ok(f"{name}: skill installed at {folder}")
         else:
             bad(f"{name}: skill not installed at {folder}: run `carbon install-skill --agent {name}`")

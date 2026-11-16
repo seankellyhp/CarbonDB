@@ -1,6 +1,6 @@
 """The detached monitor: one process per run, owning one codecarbon tracker.
 
-Started by `carbon start` as `python -m carbon_skill _monitor <run id>`. It
+Started by `carbon start` as `python -m carbondb _monitor <run id>`. It
 saves a cumulative `sample` row to the database every interval, so a hard kill
 loses at most one interval, and it stops on the `stop` file in the run folder,
 on a signal, or when the agent it is bound to exits.

@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CARBON_COUNTRY: NLD
+      CARBON_RUN_ROOT: ${{ github.workspace }}/ci-runs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - run: uv run pytest -v
+      - run: uv tool install .
+      - name: carbon install-skill and doctor
+        shell: bash
+        env:
+          CLAUDE_CONFIG_DIR: ${{ github.workspace }}/ci-claude
+        run: |
+          mkdir -p "$CLAUDE_CONFIG_DIR"
+          carbon install-skill --agent claude-code
+          carbon doctor
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-logs-${{ matrix.os }}
+          path: ${{ github.workspace }}/ci-runs/**/monitor.log
+          if-no-files-found: ignore

@@ -1,7 +1,7 @@
-# `/carbon`: measure, then reduce, the footprint of AI-assisted coding
+# CarbonDB: measure, then reduce, the footprint of AI-assisted coding
 
-The workshop notebooks measure Python programs. This tool measures **the work
-your AI agent does**. Ask your agent to "start carbon tracking", do some work,
+CarbonDB measures **the work your AI coding agent does**, and keeps every
+measurement in one local SQLite database. Ask your agent to "start carbon tracking", do some work,
 then ask it to "stop carbon tracking", and you get a report with three
 separate parts:
 
@@ -28,36 +28,36 @@ how to use it. How far each combination has been tested:
 
 ## Install
 
-You need [uv](https://docs.astral.sh/uv/getting-started/installation/), the same
-tool the workshop notebooks use. `uv tool install` puts a program in its own
+You need [uv](https://docs.astral.sh/uv/getting-started/installation/).
+`uv tool install` puts a program in its own
 private environment and its commands on your PATH, on every OS.
 
-**A. From a clone (the workshop route)**
-
 ```bash
-git clone https://github.com/seankellyhp/eco-measure-amsterdam
-cd eco-measure-amsterdam
-uv tool install ./carbon_skill
+uv tool install git+https://github.com/seankellyhp/CarbonDB
 carbon install-skill
 carbon doctor
 ```
 
-**B. Straight from GitHub**
+That is all: no clone needed. Two other routes, for working on the code:
+
+**From a clone**
 
 ```bash
-uv tool install "git+https://github.com/seankellyhp/eco-measure-amsterdam#subdirectory=carbon_skill"
+git clone https://github.com/seankellyhp/CarbonDB
+cd CarbonDB
+uv tool install .
 carbon install-skill
 ```
 
-**C. From a clone, nothing installed on PATH**
+**From a clone, nothing installed on PATH**
 
 ```bash
-uv run --project carbon_skill carbon install-skill
-uv run --project carbon_skill carbon start
+uv run carbon install-skill
+uv run carbon start
 ```
 
-With C, the skill records the full `uv run --project "<path>" carbon` command,
-so your agent can still call it.
+With the last route, the skill records the full
+`uv run --project "<path>" carbon` command, so your agent can still call it.
 
 `carbon install-skill` installs the skill for every agent it finds
 (`~/.claude` for Claude Code, `~/.codex` for Codex); pick one with
@@ -70,9 +70,9 @@ line should say `ok`; any `PROBLEM` line says what to do.
 
 ### Or let your agent install it
 
-Open your agent in the `eco-measure-amsterdam` folder and paste:
+Paste this into your agent:
 
-> Install the carbon skill by following carbon_skill/README.md.
+> Install CarbonDB by following https://github.com/seankellyhp/CarbonDB#instructions-for-the-agent
 
 #### Instructions for the agent
 
@@ -80,14 +80,15 @@ If you are an AI agent asked to install this skill, do exactly this:
 
 1. Check that `uv --version` works. If it does not, stop and ask the user to
    install uv. Do not install it without asking.
-2. From the repository root, run `uv tool install ./carbon_skill`, then
+2. Run `uv tool install git+https://github.com/seankellyhp/CarbonDB`, then
    `carbon install-skill`, then `carbon doctor`. Allow 5 minutes for the first.
-   If `carbon` is not found, use `uv run --project carbon_skill carbon ...`
-   for the last two instead.
+   If `carbon` is not found afterwards, run `uv tool update-shell` and use the
+   full path `"$(uv tool dir --bin)/carbon"` for the last two instead.
 3. Show the user the output of `carbon doctor` verbatim.
-4. If `uv tool install` refuses because `carbon_start` already exists, the old
-   bash version is installed: see "Upgrading from the bash version" below and
-   ask the user before deleting anything.
+4. If `uv tool install` refuses because `carbon` or `carbon_start` already
+   exists, an older version is installed: see "Upgrading from carbon-skill"
+   and "Upgrading from the bash version" below, and ask the user before
+   removing anything.
 5. If `install-skill` says a carbon skill exists that it did not install, stop
    and ask the user before re-running with `--force`.
 6. Never run a `sudo` command, and never `pip install` anything.
@@ -281,7 +282,7 @@ only the usage numbers and timestamps in it, not what was said.
 |---|---|
 | the program | uv's tool folder (`uv tool dir`), with `carbon` on your PATH |
 | the skill | `~/.claude/skills/carbon/` (Claude Code, respects `CLAUDE_CONFIG_DIR`), `~/.agents/skills/carbon/` (Codex) |
-| your measurements | `~/.local/share/carbon-skill/runs/` (Linux), `~/Library/Application Support/carbon-skill/runs/` (macOS), `%LOCALAPPDATA%\carbon-skill\carbon-skill\runs\` (Windows) |
+| your measurements | `~/.local/share/carbondb/runs/` (Linux), `~/Library/Application Support/carbondb/runs/` (macOS), `%LOCALAPPDATA%\carbondb\carbondb\runs\` (Windows) |
 
 Every run is kept in one SQLite database, `carbon.db`, in that folder;
 `carbon start` prints its path as `Data:`. It holds the samples CodeCarbon
@@ -305,13 +306,29 @@ the skill keeps them.
 ## Update and uninstall
 
 ```bash
-git pull
-uv tool install --reinstall ./carbon_skill
-carbon install-skill
+uv tool upgrade carbondb          # fetches the newest version
+carbon install-skill              # refreshes the skill file
 
 carbon install-skill --remove     # removes the skill (keeps your measurements)
-uv tool uninstall carbon-skill    # removes the program
+uv tool uninstall carbondb        # removes the program
 ```
+
+### Upgrading from carbon-skill
+
+Until version 0.3 this program was called `carbon-skill` and lived inside the
+[eco-measure-amsterdam](https://github.com/seankellyhp/eco-measure-amsterdam)
+workshop repository. Both install the `carbon` command, so remove the old one
+first:
+
+```bash
+uv tool uninstall carbon-skill
+uv tool install git+https://github.com/seankellyhp/CarbonDB
+carbon install-skill
+```
+
+Your measurements are kept: the first command that needs them moves the old
+`carbon-skill/runs/` folder to `carbondb/runs/`. If it cannot be moved (a
+measurement is running, on Windows), it is used where it is.
 
 ### Upgrading from the bash version
 
@@ -321,7 +338,7 @@ pass `--force` to `uv tool install`). Then `carbon install-skill` replaces the
 old skill folder and moves its past runs to the new measurements folder. If
 the old install predates the installer's marker file, `install-skill` refuses
 to touch it; `carbon install-skill --force` moves it to
-`~/.claude/carbon-skill-backup-<time>/` (your old runs stay there, in `runs/`).
+`~/.claude/carbondb-backup-<time>/` (your old runs stay there, in `runs/`).
 
 An old run is left where it was, in `~/.claude/skills/carbon/runs/`, if a run
 with the same label already exists in the new folder. `install-skill --remove`
@@ -333,7 +350,7 @@ then removes the skill but keeps that `runs/` folder, and says so.
 
 | Symptom | Fix |
 |---|---|
-| `carbon: command not found` | Run `uv tool update-shell`, then open a new terminal. Or use route C. |
+| `carbon: command not found` | Run `uv tool update-shell`, then open a new terminal. Or run it from a clone with `uv run carbon`. |
 | `/carbon` does not appear in your agent | Restart the agent. Skills are loaded when a session starts. Run `carbon doctor`. |
 | `Monitor failed to start` | The lines printed after it come from CodeCarbon's log; `carbon doctor` repeats the test. |
 | `Tokens: session NOT identified` | Energy is still measured. To count tokens, set `CARBON_SESSION_TRANSCRIPT` to the session's `.jsonl` file before `carbon start`. |
@@ -345,13 +362,15 @@ then removes the skill but keeps that `runs/` folder, and says so.
 ## Files
 
 ```
-carbon_skill/
-  README.md            this file
-  pyproject.toml       the program and its pinned dependencies (codecarbon, ecologits)
-  uv.lock
-  src/carbon_skill/    the program
-    skill/             SKILL.md and reference/, installed by `carbon install-skill`
-  tests/               uv run --project carbon_skill pytest carbon_skill/tests
-  NOTES.md             what was verified, and how
-  workshop_mvp.md      the implementation plan
+README.md            this file
+pyproject.toml       the program and its pinned dependencies (codecarbon, ecologits)
+uv.lock
+src/carbondb/        the program
+  skill/             SKILL.md and reference/, installed by `carbon install-skill`
+tests/               uv run pytest
+docs/NOTES.md        what was verified, and how
 ```
+
+## License
+
+MIT, see [LICENSE](LICENSE).

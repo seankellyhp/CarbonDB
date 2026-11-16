@@ -25,7 +25,15 @@ def data_root() -> Path:
     else:
         import platformdirs
 
-        root = platformdirs.user_data_path("carbon-skill") / "runs"
+        root = platformdirs.user_data_path("carbondb") / "runs"
+        old = platformdirs.user_data_path("carbon-skill") / "runs"
+        if not root.exists() and old.is_dir():
+            # Measurements made when the program was called carbon-skill.
+            try:
+                root.parent.mkdir(parents=True, exist_ok=True)
+                old.rename(root)
+            except OSError:
+                root = old  # in use or on another disk: keep using it where it is
     root.mkdir(parents=True, exist_ok=True)
     return root
 

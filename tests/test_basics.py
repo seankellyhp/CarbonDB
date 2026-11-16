@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from carbon_skill import agents, locate, paths, provider_impacts, runs, tokens
+from carbondb import agents, locate, paths, provider_impacts, runs, tokens
 
 
 @pytest.mark.parametrize("label", ["default", "t1", "idle.v2", "a_b-c", "x" * 64])
@@ -43,7 +43,7 @@ def test_split_model():
 
 
 def test_sweep_marks_dead_monitor():
-    from carbon_skill import db
+    from carbondb import db
 
     run_id = db.insert_run({
         "label": "dead", "state": "running", "created_at": db.now_iso(), "monitor_pid": 999999999,
@@ -99,3 +99,27 @@ def test_remove_keeps_old_runs_that_were_not_migrated(tmp_path, monkeypatch):
     assert "kept" in agents.remove("claude-code")
     assert (folder / "runs" / "taken" / "emissions.csv").read_text() == "old"
     assert not (folder / "SKILL.md").exists()
+
+
+def test_install_upgrades_a_skill_installed_as_carbon_skill(tmp_path, monkeypatch):
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
+    folder = tmp_path / "claude" / "skills" / "carbon"
+    folder.mkdir(parents=True)
+    (folder / agents.OLD_MARKER).write_text("carbon-skill\n")
+    agents.install("claude-code")
+    assert (folder / agents.MARKER).exists() and not (folder / agents.OLD_MARKER).exists()
+    assert (folder / "SKILL.md").exists()
+
+
+def test_data_folder_of_carbon_skill_is_moved(tmp_path, monkeypatch):
+    import platformdirs
+
+    monkeypatch.delenv("CARBON_RUN_ROOT")
+    monkeypatch.setattr(platformdirs, "user_data_path", lambda name: tmp_path / "share" / name)
+    old = tmp_path / "share" / "carbon-skill" / "runs"
+    old.mkdir(parents=True)
+    (old / "carbon.db").write_text("kept")
+    root = paths.data_root()
+    assert root == tmp_path / "share" / "carbondb" / "runs"
+    assert (root / "carbon.db").read_text() == "kept" and not old.exists()
+    assert paths.data_root() == root
