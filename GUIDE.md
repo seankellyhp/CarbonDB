@@ -1,6 +1,6 @@
 # CarbonDB guide
 
-The details behind the [README](../README.md).
+The details behind the [README](README.md).
 
 ## Commands
 

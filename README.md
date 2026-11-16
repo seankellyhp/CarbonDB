@@ -73,7 +73,7 @@ measurements are kept.
 
 ## More
 
-[docs/GUIDE.md](docs/GUIDE.md) covers measured versus estimated CPU power,
+[GUIDE.md](GUIDE.md) covers measured versus estimated CPU power,
 settings, the electricity grid, where data is stored, reducing the footprint
 and troubleshooting. To work on the code: clone, then `uv run pytest` and
 `uv run carbon ...`.

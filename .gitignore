@@ -2,6 +2,5 @@
 dist/
 __pycache__/
 .pytest_cache/
-# local planning notes
-docs/sqlite_plan.md
-docs/workshop_mvp.md
+# local notes and plans
+docs/
